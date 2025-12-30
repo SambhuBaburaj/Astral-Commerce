@@ -10,6 +10,7 @@ export default function Home() {
   const [input, setInput] = useState("");
   const { messages, sendMessage, setMessages } = useChatSocket(conversationId);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     // Check localStorage for existing session (optional, for persistency)
@@ -25,11 +26,13 @@ export default function Home() {
     }
   }, [conversationId, setMessages]);
 
-  /* Removed scroll to bottom since we want Newest to be at Top
+
+
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-  */
+    if (isOpen) {
+        setTimeout(() => inputRef.current?.focus(), 100); // Small delay for animation
+    }
+  }, [isOpen]);
 
   const startChat = async () => {
     try {
@@ -80,7 +83,7 @@ export default function Home() {
           </div>
 
           {/* Messages */}
-          <div className="flex-1 p-4 overflow-y-auto space-y-4 bg-zinc-50 dark:bg-zinc-900/50">
+          <div className="flex-1 p-4 overflow-y-auto bg-zinc-50 dark:bg-zinc-900/50 flex flex-col-reverse">
             {messages.length === 0 && (
                 <div className="text-center text-zinc-500 text-sm mt-10">
                     Type a message to start chatting!
@@ -88,7 +91,7 @@ export default function Home() {
             )}
             {messages.map((msg, i) => (
               <div
-                key={i}
+                key={msg.id || i}
                 className={`flex ${
                   msg.senderType === "user" ? "justify-end" : "justify-start"
                 }`}
@@ -104,12 +107,13 @@ export default function Home() {
                 </div>
               </div>
             ))}
-            <div ref={messagesEndRef} />
+
           </div>
 
           {/* Input */}
           <form onSubmit={handleSend} className="p-4 bg-white dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-800 flex gap-2">
             <input
+              ref={inputRef}
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
